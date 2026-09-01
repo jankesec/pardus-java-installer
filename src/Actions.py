@@ -8,8 +8,9 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         pid = sys.argv[1]
         # Kill root installing process
-        subprocess.run(["kill", "-2", pid])  # SIGINT: -2
-    if len(sys.argv) == 3:
+        ret = subprocess.run(["kill", "-2", pid])  # SIGINT: -2
+        sys.exit(ret.returncode)
+    elif len(sys.argv) == 3:
         operation = sys.argv[1]
         package = sys.argv[2]
         path = None
@@ -24,6 +25,7 @@ if __name__ == "__main__":
     cmd = PackageManager.get_command(operation, package=package, path=path)
     print(f"Action Command: {cmd}")
     if cmd:
+        proc = None
         try:
             proc = subprocess.Popen(cmd)
             code = proc.wait()
@@ -35,11 +37,11 @@ if __name__ == "__main__":
                     proc.wait(timeout=5)
                 except subprocess.TimeoutExpired:
                     proc.kill()  # SIGKILL
-                    sys.exit(1)
+            sys.exit(130)
         except Exception as e:
             print("Exception happened on process run:", e)
             print(sys.argv)
+            sys.exit(1)
     else:
         print(f"Not valid command tuple: ({operation},{package},{path})")
-
-    sys.exit(0)
+        sys.exit(1)
