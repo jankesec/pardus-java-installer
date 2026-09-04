@@ -25,6 +25,12 @@ PACKAGES = {
         "architectures": ["amd64", "arm64"],
         "depends": ["openjdk-21-jre-headless"],
     },
+    "openjdk-17-jre": {
+        "name": "OpenJDK 17",
+        "path": ["/usr/lib/jvm/java-17-openjdk-{}/bin/java".format(Arch.arch())],
+        "architectures": ["amd64", "arm64"],
+        "depends": ["openjdk-17-jre-headless"],
+    },
     "jdk-25": {
         "name": "Oracle Java 25",
         "path": [
