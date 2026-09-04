@@ -6,7 +6,7 @@ import Dialogs
 gi.require_version("Gtk", "3.0")
 import locale
 import os
-from gettext import gettext as _
+from locale import gettext as _
 
 from gi.repository import Gdk, Gtk
 
