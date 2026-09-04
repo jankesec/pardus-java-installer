@@ -1,15 +1,51 @@
 #!/usr/bin/env python3
+import os
+import signal
 import subprocess
 import sys
 
 import PackageManager
 
+
+def cancel_process(pid_str):
+    if not pid_str.isdigit():
+        print(f"Invalid PID: {pid_str}")
+        sys.exit(1)
+
+    pid = int(pid_str)
+    if pid <= 1:
+        print(f"Refusing to signal system PID: {pid}")
+        sys.exit(1)
+
+    # Verify that the target process is an Actions.py instance
+    try:
+        with open(f"/proc/{pid}/cmdline", "rb") as f:
+            cmdline = f.read()
+            if b"Actions.py" not in cmdline and b"pardus-java-installer" not in cmdline:
+                print(f"Refusing to signal non-installer process: {pid}")
+                sys.exit(1)
+    except (FileNotFoundError, ProcessLookupError):
+        # Target process has already terminated
+        sys.exit(0)
+    except PermissionError:
+        print(f"Permission denied accessing /proc/{pid}")
+        sys.exit(1)
+
+    try:
+        os.kill(pid, signal.SIGINT)
+    except ProcessLookupError:
+        # Process terminated before signal dispatch
+        sys.exit(0)
+    except Exception as e:
+        print(f"Failed to send signal to PID {pid}: {e}")
+        sys.exit(1)
+
+    sys.exit(0)
+
+
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        pid = sys.argv[1]
-        # Kill root installing process
-        ret = subprocess.run(["kill", "-2", pid])  # SIGINT: -2
-        sys.exit(ret.returncode)
+        cancel_process(sys.argv[1])
     elif len(sys.argv) == 3:
         operation = sys.argv[1]
         package = sys.argv[2]
